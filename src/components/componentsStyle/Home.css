@@ -1,0 +1,147 @@
+* {
+    margin: 0;
+    box-sizing: border-box;
+}
+
+/* Home page */
+
+.content {
+    display: flex;
+    text-align: center;
+}
+
+.filters {
+    width: 30%;
+    text-align: center;
+}
+
+
+/* Card */
+
+.blogs {
+    width: 70%;
+}
+
+
+.img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.blogs {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 0.5rem 0 0.5rem 0;
+}
+
+.card{
+    margin: .5rem;
+}
+
+.card-text {
+    text-align: left;
+}
+
+.readmore {
+    text-decoration: none;
+    color: #000000;
+    text-align: left;
+    padding: .5rem;
+}
+
+.con {
+    position: relative;
+    width: 100%;
+}
+
+
+/* Footer */
+
+.footer {
+    width: 100%;
+    height: 4em;
+    background-color: #DCBFFF;
+    text-align: center;
+    font-size: larger;
+}
+
+
+/* TopLeft component */
+.topleft {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    background-color: white;
+    color: #000000;
+    padding: .2rem .5rem;
+    text-transform: capitalize;
+}
+
+/* Left Section */
+
+.search {
+    border: none;
+    border-radius: 0;
+    width: 100%;
+    padding: 0 10px 0 10px;
+    background-color: inherit;
+    margin-bottom: 0;
+    color: #000000;
+}
+
+input:focus {
+    outline: none;
+}
+
+i{
+    cursor: pointer;
+}
+
+.form {
+    border-bottom: 1px solid rgb(149, 146, 146);
+}
+
+
+/* navbar */
+
+.navbar {
+    background-color: #D0A2F7;
+    width: 100%;
+    height: 100%;
+    height: 4.5em;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 0;
+}
+
+.header,h1 {
+    color: rgb(255, 255, 255);
+    font-size: 2.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Apple Chancery', cursive;
+}
+
+.links,a {
+    text-decoration: none;
+    display: flex;
+    color: rgb(255, 255, 255);
+    list-style: none;
+    padding-right : 15px;
+    justify-content: space-around;
+}
+
+.navbar-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 2em;
+    background-color: #D0A2F7;
+    padding-top: 1rem;
+}
+

@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthState';
 export default function Logout() {
 
     const navigate = useNavigate();
+    const { setIsLoggedIn } = useAuth();
     const logout = async () => {
         const response = await fetch("http://localhost:5000/users/logout", {
             method : "GET",
@@ -15,7 +16,7 @@ export default function Logout() {
         const results = await response.json();
         console.log(results);
         if(results.ok) {
-            useAuth.setIsLoggedIn(false);
+            setIsLoggedIn(false);
             navigate("/login") 
         }
         else{

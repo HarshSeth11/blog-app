@@ -61,36 +61,21 @@ export default function Signup() {
 
   return (
     <div className="page">
-      <div>
-        <Navbar />
-      </div>
       <div className="box">
         <div className="signup-form">
           <div class="col-lg-12 login-title">SIGN UP</div>
           <form onSubmit={postData}>
             <div className="from-group">
-              <label htmlFor="name">
-                Name:
-              </label>
-              <input value={name} type="text" className="name" id="name" onChange={(e) => setName(e.currentTarget.value) } required/>
+              <input placeholder="Name" value={name} type="text" className="name" id="name" onChange={(e) => setName(e.currentTarget.value) } required/>
             </div>
             <div className="from-group">
-              <label htmlFor="username">
-                UserName: 
-              </label>
-              <input type="text" id="username" value={userName} onChange={(e) => setUserName(e.currentTarget.value) } required/>
+              <input placeholder="Username" type="text" id="username" value={userName} onChange={(e) => setUserName(e.currentTarget.value) } required/>
             </div>
             <div className="from-group">
-              <label htmlFor="email">
-                Email: 
-              </label>
-              <input type="email" id="email" value={email} onChange={(e) => setEmail(e.currentTarget.value) } required/>
+              <input placeholder="Email" type="email" id="email" value={email} onChange={(e) => setEmail(e.currentTarget.value) } required/>
             </div>
             <div className="from-group">
-              <label htmlFor="password">
-                Password: 
-              </label>
-              <input type="password" id="password" value={password} onChange={(e) => setPassword(e.currentTarget.value) } required/>
+              <input placeholder="Password" type="password" id="password" value={password} onChange={(e) => setPassword(e.currentTarget.value) } required/>
             </div>
             <div className="from-group">
               <button type="submit" className="btn signup-btn col-6">Sign Up</button>

@@ -11,9 +11,6 @@ import LeftSection from "./LeftSection";
 export default function Home() {
   return (
     <div className="home">
-        <div className="navbar d-inline">
-            < Navbar />
-        </div>
         <div className="content">
             <section className="filters">
               < LeftSection />
@@ -23,9 +20,6 @@ export default function Home() {
                 < Card />
               </div>
             </section>
-        </div>
-        <div className="d-inline">
-            < Footer />
         </div>
     </div>
   );

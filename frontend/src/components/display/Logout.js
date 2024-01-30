@@ -1,13 +1,16 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthState';
+import { logout } from '../../app/Slices/authSlice';
+import { useDispatch } from 'react-redux';
 
 
 export default function Logout() {
 
+    const dispatch = useDispatch();
+
     const navigate = useNavigate();
-    const { setIsLoggedIn } = useAuth();
-    const logout = async () => {
+
+    const helper = async () => {
         const response = await fetch("http://localhost:5000/users/logout", {
             method : "GET",
             credentials: "include",
@@ -16,7 +19,7 @@ export default function Logout() {
         const results = await response.json();
         console.log(results);
         if(results.ok) {
-            setIsLoggedIn(false);
+            dispatch(logout());
             navigate("/login") 
         }
         else{
@@ -25,6 +28,6 @@ export default function Logout() {
     }
 
     useEffect(() => {
-        logout()
+        helper()
     })
 }

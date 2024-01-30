@@ -8,16 +8,15 @@ import Signup from "./components/account/Signup";
 import CreatePost from "./components/display/CreatePost";
 import Post from "./components/display/Post";
 import Logout from "./components/display/Logout";
-import { AuthState } from "./context/AuthState";
+import Layout from "./Layout";
 
 function App() {
 
   return (
     <div className="app">
-      <AuthState>
         <BrowserRouter>
           <Routes>
-            <Route path="/">
+            <Route path="/" element={< Layout />}>
               <Route index element={<Home />} />
               <Route path="login" element={<Login />} />
               <Route path="singup" element={<Signup />} />
@@ -28,7 +27,6 @@ function App() {
             </Route>
           </Routes>
         </BrowserRouter>
-      </AuthState>
     </div>
   );
 }

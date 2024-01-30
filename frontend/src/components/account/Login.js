@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../display/Navbar";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthState";
+import { useSelector, useDispatch } from 'react-redux'
+import { login } from "../../app/Slices/authSlice";
 
 export default function Login() {
   const navigate = useNavigate();
-  const {isLoggedIn, setIsLoggedIn} = useAuth();
+  const dispatch = useDispatch();
+  const isLoggedIn = useSelector(state => state.authReducer.auth.isLogin);
 
   const checkLoggedIn = () => {
     console.log(isLoggedIn);
@@ -43,7 +45,7 @@ export default function Login() {
 
     if(results.success) {
       alert("You're Successfully logged in");
-      setIsLoggedIn(true);
+      dispatch(login(true, {results}));
       navigate("/");
     }
     else if(!results.success) {
@@ -59,23 +61,20 @@ export default function Login() {
 
   return (
     <div className="page">
-      <div>
-        <Navbar />
-      </div>
       <div className="box">
         <div className="login-form">
-          <div class="col-lg-12 login-title">SIGN UP</div>
+          <div class="col-lg-12 login-title">LOGIN</div>
           <form onSubmit={handleSubmit}>
             <div className="from-group">
-              <label htmlFor="email">Email:</label>
-              <input type="email" className="email" id="email" name="email" value={credentials.email} onChange={handleChange} />
+              {/* <label htmlFor="email">Email:</label> */}
+              <input placeholder="Enter email" type="email" className="email" id="email" name="email" value={credentials.email} onChange={handleChange} />
             </div>
             <div className="from-group">
-              <label htmlFor="password">password:</label>
-              <input type="password" id="password" name="password" value={credentials.password} onChange={handleChange} />
+              {/* <label htmlFor="password">password:</label> */}
+              <input placeholder="Enter Password" type="password" id="password" name="password" value={credentials.password} onChange={handleChange} />
             </div>
             <div className="from-group">
-              <button type="submit" className="btn signup-btn col-6">Sign Up</button>
+              <button type="submit" className="btn signup-btn col-6">Login</button>
             </div>
           </form>
         </div>

@@ -1,0 +1,80 @@
+/* Apply a CSS reset to normalize styles across browsers */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Set a background color for the whole page */
+body {
+  background-color: #1a2226;
+  color: #ecf0f5;
+  font-family: Arial, sans-serif;
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.box {
+  width: 80%;
+  max-width: 400px; /* Adjust the maximum width as needed */
+  margin: 0 auto; /* Center the box horizontally */
+  background: hsl(200, 19%, 13%);
+  text-align: left; /* Align text to the left */
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  padding: 2rem;
+  border-radius: 10px;
+}
+
+.login-form {
+  width: 100%;
+}
+
+.login-title {
+  font-size: 24px;
+  letter-spacing: 2px;
+  margin-bottom: 2.4rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.from-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  background-color: #1a2226;
+  border: none;
+  border-bottom: 2px solid #0db8de;
+  border-top: 0;
+  border-radius: 0;
+  font-weight: bold;
+  outline: 0;
+  padding: 8px;
+  color: #ecf0f5;
+}
+
+.signup-btn {
+  width: 100%;
+  color: #0db8de;
+  border: 1px solid #0db8de;
+  border-radius: 2px;
+  margin-top: 2rem;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.signup-btn:hover {
+  background-color: #0db8de;
+}

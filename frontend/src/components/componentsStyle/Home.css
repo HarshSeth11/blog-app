@@ -126,6 +126,11 @@ i{
     font-family: 'Apple Chancery', cursive;
 }
 
+.links > li {
+    margin: 0 10px;
+    cursor: pointer;
+}
+
 .links,a {
     text-decoration: none;
     display: flex;

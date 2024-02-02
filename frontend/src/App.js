@@ -9,6 +9,7 @@ import CreatePost from "./components/display/CreatePost";
 import Post from "./components/display/Post";
 import Logout from "./components/display/Logout";
 import Layout from "./Layout";
+import PostForm from "./components/post-form/PostForm";
 
 function App() {
 
@@ -21,7 +22,7 @@ function App() {
               <Route path="login" element={<Login />} />
               <Route path="signup" element={<Signup />} />
               <Route path="about" element={<Home />} />
-              <Route path="createpost" element={<CreatePost />} />
+              <Route path="createpost" element={<PostForm />} />
               <Route path="post" element={<Post state="hello" />} />
               <Route path="logout" element={<Logout />} />
             </Route>

@@ -9,10 +9,8 @@ require("dotenv").config()
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const blogs = require('./routes/blogs');
-const { requireAuth } = require('./middleware/authMiddleware');
-const db = require('./models/db');
+const { requireAuth } = require('./middleware/auth.middleware.js');
 
-db();
 
 const app = express();
 
@@ -23,15 +21,6 @@ app.use(cors(
     origin : "http://localhost:3000",
   }
 ))
-
-app.use((req,res,next) => {
-  res.header(
-      "Access-Control-Allow-Headers",
-      "Origin, X-Requested-with, Content-Type, Accept",
-      'Access-Control-Allow-Credentials',
-  );
-  next();
-})
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

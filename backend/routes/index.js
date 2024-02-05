@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { requireAuth } = require('../middleware/authMiddleware');
+const { requireAuth } = require('../middleware/auth.middleware');
 
 
 /* GET home page. */

@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const maxAge = 3 * 24 * 60 * 60;
 const createToken = async(id) => {
     try {
-        return jwt.sign({ id }, 'heythisismysecretkey', { expiresIn : maxAge });
+        return jwt.sign({ id }, process.env.JWT_ACCESS_TOKEN, { expiresIn : maxAge });
     } catch (error) {
         return error;
     }

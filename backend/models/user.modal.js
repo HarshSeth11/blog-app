@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 const { isEmail } = require('validator');
 const bcrypt = require("bcrypt");
+const jsonwebtoken = require("jsonwebtoken");
 
 const userSchema = new Schema({
     name: {
@@ -28,25 +29,40 @@ const userSchema = new Schema({
 });
 
 
-userSchema.pre('save', async function(next) {
+userSchema.pre("save", async function(next) {
+    if(!this.isModified("password")) return next();
+
     this.password = await bcrypt.hash(this.password, 10);
-    next();
 })
 
-userSchema.statics.login = async function(email,password) {
-    const user = await this.findOne({ email });
-    if(user) {
-        const auth = await bcrypt.compare(password, user.password);
-        if(auth) {
-            return user;
-        }
-        else {
-            throw Error('Incorrect-password');
-        }
+userSchema.methods.isPasswordCorrect = async function(password) {
+    return await bcrypt.compare(password, this.password);
+}
+
+userSchema.methods.generateAccessToken = function() {
+    jsonwebtoken.sign({
+        _id: this._id,
+        userName: this.userName,
+        email: this.email,
+        name: this.name,
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+        expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
     }
-    else{
-        throw Error('Incorrect-Email');
-    }
+    )
+}
+
+userSchema.methods.generateRefreshToken = function() {
+    jsonwebtoken.sign(
+        {
+            _id: this._id,
+        },
+        process.env.REFRESH_TOKEN_SECRET,
+        {
+            expiresIn: REFRESH_TOKEN_EXPIRY,
+        }
+    )
 }
 
 module.exports =  mongoose.model('User', userSchema);

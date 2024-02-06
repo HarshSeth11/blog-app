@@ -40,7 +40,7 @@ module.exports.createBlog_Post = asyncHandler( async (req, res, next) => {
         category
     });
 
-    const createdPost = await Post.findOne({ _id: post._id });
+    const createdPost = await Post.findById(post._id);
 
     if(!createdPost) throw new ApiError(500, "There is some problem at the server end.");
 

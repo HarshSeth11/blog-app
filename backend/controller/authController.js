@@ -1,4 +1,4 @@
-const userSchema = require('../models/createUser');
+const userSchema = require('../models/user.modal.js');
 const jwt = require('jsonwebtoken');
 
 // Functions 

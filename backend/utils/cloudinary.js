@@ -1,7 +1,9 @@
 // const v2 = require("cloudinary");
-import {v2 as cloudinary} from 'cloudinary';
+const v2 = require("cloudinary");
+// import {v2 as cloudinary} from 'cloudinary';
 const fs = require("fs");
-          
+
+const cloudinary = v2;
 
 cloudinary.config({ 
   cloud_name: process.env.CLOUDINARY_NAME, 
@@ -13,7 +15,7 @@ const uploadOnCloudinary = async (localFilePath) => {
     if(!localFilePath) return null;
 
     try {
-        const response = await cloudinary.uploader.upload(localFilePath, { resource_type: auto });
+        const response = await cloudinary.uploader.upload(localFilePath, { resource_type: "auto" });
         console.log("File is Uploaded: ", response.original_filename);
 
         // unlink this file. basically delete it from the disk storage.

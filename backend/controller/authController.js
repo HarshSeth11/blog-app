@@ -1,4 +1,4 @@
-const userSchema = require('../models/user.modal.js');
+const User = require('../models/user.modal.js');
 const jwt = require('jsonwebtoken');
 
 // Functions 
@@ -14,7 +14,7 @@ const createToken = async(id) => {
 module.exports.signin_post = async (req,res,next) => {
     console.log(req.body);
     try {
-        const user = new userSchema({
+        const user = new User({
         name: req.body.name,
         userName: req.body.userName,
         email: req.body.email,
@@ -35,7 +35,7 @@ module.exports.login_post = async (req,res,next) => {
     const password = req.body.password;
     
     try {
-        const user = await userSchema.login(email,password); 
+        const user = await User.login(email,password); 
         console.log(user);
         const token = await createToken(user._id);
         res

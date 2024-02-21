@@ -34,4 +34,23 @@ const uploadOnCloudinary = async (localFilePath) => {
     }
 }
 
-module.exports = { uploadOnCloudinary };
+// Function to delete a file from Cloudinary using its URL
+async function deleteFromCloudinary(fileUrl) {
+    try {
+      // Search for the file using its URL
+      const searchResult = await cloudinary.search
+        .expression(`url:${fileUrl}`)
+        .execute();
+      
+      // Extract the public ID from the search result
+      const publicId = searchResult.resources[0].public_id;
+  
+      // Delete the file using the public ID
+      const result = await cloudinary.uploader.destroy(publicId);
+      console.log('File deleted successfully:', result);
+    } catch (error) {
+      console.error('Error deleting file:', error);
+    }
+  }
+
+module.exports = { uploadOnCloudinary, deleteFromCloudinary };

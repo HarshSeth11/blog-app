@@ -1,9 +1,11 @@
 const { asyncHandler } = require("../utils/asyncHandler");
 const { ApiError } = require("../utils/ApiError");
 const { ApiResponse } = require("../utils/ApiResponse");
-const { uploadOnCloudinary } = require("../utils/cloudinary");
+const {
+  uploadOnCloudinary,
+  deleteFromCloudinary,
+} = require("../utils/cloudinary");
 const Post = require("../models/post.modal");
-const { findByIdAndUpdate } = require("../models/user.modal");
 
 module.exports.createBlog_Post = asyncHandler(async (req, res) => {
   // Destructure all the data from the req body
@@ -94,7 +96,11 @@ module.exports.updatePostDetails = asyncHandler(async (req, res) => {
     updateobj["category"] = category;
   }
 
-  const blog = await findByIdAndUpdate(postId, { updateobj }, { new: true });
+  const blog = await Post.findByIdAndUpdate(
+    postId,
+    { updateobj },
+    { new: true }
+  );
 
   if (!blog) {
     throw new ApiError(400, "No blog found to update");
@@ -106,8 +112,8 @@ module.exports.updatePostDetails = asyncHandler(async (req, res) => {
 });
 
 module.exports.changeThumbnail = asyncHandler(async (req, res) => {
-  // To Do: I need to implement the functionality of deleting the previous thumbnail from cloudinary before updating  
-  const { postId } = req.params  
+  // To Do: I need to implement the functionality of deleting the previous thumbnail from cloudinary before updating
+  const { postId } = req.params;
   const thumbnailLocalPath = req.file?.path;
 
   if (!thumbnailLocalPath) {
@@ -120,10 +126,17 @@ module.exports.changeThumbnail = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Thumbnail is Required");
   }
 
-  const blog = await findByIdAndUpdate(postId, { thumbnail }, { new: true });
+  const { thumbnailToBeDeleted } = await Post.findById(postId);
 
-  if (!blog)
-    throw new ApiError(400, "No blog found to update");
+  await deleteFromCloudinary(thumbnailToBeDeleted);
+
+  const blog = await Post.findByIdAndUpdate(
+    postId,
+    { thumbnail },
+    { new: true }
+  );
+
+  if (!blog) throw new ApiError(400, "No blog found to update");
 
   return res
     .status(201)
@@ -131,17 +144,17 @@ module.exports.changeThumbnail = asyncHandler(async (req, res) => {
 });
 
 module.exports.deletePost = asyncHandler(async (req, res) => {
-    const { postId } = req.params;
+  const { postId } = req.params;
 
-    const deletedPost = await Post.findByIdAndDelete(postId);
+  const deletedPost = await Post.findByIdAndDelete(postId);
 
-    if(!deletedPost) {
-        throw new ApiError(400, "No post exists to delete");
-    }
+  await deleteFromCloudinary(deletedPost.thumbnail);
 
-    return res
+  if (!deletedPost) {
+    throw new ApiError(400, "No post exists to delete");
+  }
+
+  return res
     .status(200)
-    .json(
-        new ApiResponse(200, "Post is deleted Successfully")
-    );
+    .json(new ApiResponse(200, "Post is deleted Successfully"));
 });

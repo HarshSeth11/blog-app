@@ -25,7 +25,8 @@ const userSchema = new Schema({
         type: String,
         required: [true, "Please Enter the password"],
         minlength : [8, "Minimum password length is 8 characters"]
-    }
+    },
+    refreshToken: String
 });
 
 

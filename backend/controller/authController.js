@@ -4,6 +4,22 @@ const {asyncHandler} = require("../utils/asyncHandler.js");
 const {ApiError} = require("../utils/ApiError.js");
 const {ApiResponse} = require("../utils/ApiResponse.js");
 
+const generateAccessAndRefreshToken = async(id) => {
+    try {
+        const user = await User.findById(id);
+        const accessToken = await user.generateAccessToken();
+        const refreshToken = await user.generateRefreshToken();
+
+        user.refreshToken = refreshToken;
+        await user.save({validateBeforeSave: false});
+
+        return {accessToken, refreshToken};
+
+    } catch (error) {
+        throw new ApiError(500, "Error while generating tokens");
+    }
+}
+
 module.exports.signin_post = asyncHandler( async (req, res, next) => {
     // destructure the data from the req body
     // validate the data
@@ -32,24 +48,103 @@ module.exports.signin_post = asyncHandler( async (req, res, next) => {
     );
 })
 
-module.exports.login_post = async (req,res,next) => {
-    const email = req.body.email;
-    const password = req.body.password;
-    
-    try {
-        const user = await User.login(email,password); 
-        console.log(user);
-        const token = await createToken(user._id);
-        res
-        .cookie('auth_token', token, {httpOnly: true, expires : new Date(Date.now() + 25892000000)})
-        .json({success: true});
-    } catch(err) {
-        console.log(err);
-        res.status(400).json({msg : err});
-    }
-}
+module.exports.login_post = asyncHandler( async (req,res) => {
+    const { username, email, password } = req.body;
 
-module.exports.logout_get = (req,res) => {
-    res.cookie('auth_token', '', { maxAge: 1 })
-    .json({ok : true})
-}
+
+    if (!username && !email) {
+        throw new ApiError(400, "Username or email is required");
+    }
+
+    const user = await User.findOne({
+        $or: [{ username }, { email }],
+    });
+
+    if (!user) throw new ApiError(400, "User doesn't exist");
+
+    const isPasswordCorrect = await user.isPasswordCorrect(password);
+
+    if (!isPasswordCorrect) {
+        throw new ApiError(400, "Password is incorrect!!");
+    }
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+        user._id
+    );
+
+    const loginUser = await User.findById(user._id).select(
+        " -password -refreshToken "
+    );
+
+    
+    const options = {
+        httpOnly: true,
+        secure: true,
+    };
+
+    return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+        new ApiResponse(200, "User Successfully Logged in", {
+            loginUser,
+            refreshToken,
+            accessToken,
+        })
+    );
+})
+
+module.exports.logout_get = asyncHandler(async (req,res) => {
+    await User.findByIdAndUpdate(
+        req?.user?._id,
+        {
+            $unset: {
+                refreshToken: 1,
+            },
+        }
+    );
+
+    const options = {
+        httpOnly: true,
+        secure: true,
+    };
+
+    return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, "User Successfully Logged out!", {}));
+
+});
+
+module.exports.refreshAccessToken = asyncHandler(async (req, res) => {
+    const { cookieRefreshToken } = req.cookies?.refreshToken;
+
+    if(!cookieRefreshToken) {
+        throw new ApiError(401, "Refresh Token required");
+    }
+
+    const decodedToken = jwt.verify(`${cookieRefreshToken}`, `${process.env.REFRESH_TOKEN_SECRET}`);
+
+    const user = await User.findById(decodedToken._id);
+
+    if(!user) {
+        throw new ApiError(400, "User doesn't exists.");
+    }
+
+    const {refreshToken, accessToken} = await generateAccessAndRefreshToken(user._id);
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res
+    .json(200)
+    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, options)
+    .json(
+        new ApiResponse(200, "Both the tokens are generated Successfully", {refreshToken, accessToken})
+    );
+});

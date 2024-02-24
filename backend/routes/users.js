@@ -1,21 +1,26 @@
-const express = require('express');
-const router = express.Router();
+const { Router } = require('express');
+const verifyJWT = require('../middleware/auth.middleware')
+const router = Router();
 
 // imported modules
-const authController = require('../controller/authController');
+const {registerUser, loginUser, logoutUser, refreshAccessToken, changePassword, getCurrentUser, updateAccountDetails} = require('../controller/authController');
 
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
+router.post('/register', registerUser);
 
 
-router.post('/register', authController.signin_post);
+router.post('/login', loginUser);
 
-router.post("/login", authController.login_post);
+router.post('/logout', verifyJWT, logoutUser);
 
-router.get('/logout', authController.logout_get);
+router.post('/refresh-token', refreshAccessToken);
+
+router.post('/change-password', verifyJWT, changePassword);
+
+router.get('/current-user', verifyJWT, getCurrentUser);
+
+router.patch('/update-account', verifyJWT, updateAccountDetails);
+
 
 
 module.exports = router;

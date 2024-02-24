@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
+const mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2')
 
 const commentBy = new Schema({
     user: {
@@ -10,7 +11,7 @@ const commentBy = new Schema({
 });
   
 
-const blogPosts = new Schema({
+const blogSchema = new Schema({
     title: {
         type: String,
         required : [true, "Title is Required"],
@@ -34,4 +35,6 @@ const blogPosts = new Schema({
     comments: [commentBy],
 });
 
-module.exports =  mongoose.model('Post', blogPosts);
+blogSchema.plugin(mongooseAggregatePaginate);
+
+module.exports =  mongoose.model('Post', blogSchema);

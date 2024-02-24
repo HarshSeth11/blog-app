@@ -1,6 +1,7 @@
 const { asyncHandler } = require("../utils/asyncHandler");
 const { ApiError } = require("../utils/ApiError");
 const { ApiResponse } = require("../utils/ApiResponse");
+const {isValidObjectId} = require('mongoose');
 const {
   uploadOnCloudinary,
   deleteFromCloudinary,
@@ -158,3 +159,24 @@ module.exports.deletePost = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, "Post is deleted Successfully"));
 });
+
+module.exports.getPostById = asyncHandler(async (req, res) => {
+  const { postId } = req.params;
+
+  if(!isValidObjectId(postId)) {
+    throw new ApiError(400, "Post doesn't exists");
+  }
+  
+  const post = await Post.findById(postId);
+  
+  if(!post) {
+    throw new ApiError(400, "Post doesn't exists");
+  }
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(200, "Post fetched Successfully", post)
+  );
+});
+

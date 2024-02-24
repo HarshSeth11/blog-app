@@ -20,7 +20,7 @@ const generateAccessAndRefreshToken = async(id) => {
     }
 }
 
-module.exports.signin_post = asyncHandler( async (req, res, next) => {
+module.exports.registerUser = asyncHandler( async (req, res, next) => {
     // destructure the data from the req body
     // validate the data
     // check if user already exist.
@@ -48,7 +48,7 @@ module.exports.signin_post = asyncHandler( async (req, res, next) => {
     );
 })
 
-module.exports.login_post = asyncHandler( async (req,res) => {
+module.exports.loginUser = asyncHandler( async (req,res) => {
     const { username, email, password } = req.body;
 
 
@@ -95,7 +95,7 @@ module.exports.login_post = asyncHandler( async (req,res) => {
     );
 })
 
-module.exports.logout_get = asyncHandler(async (req,res) => {
+module.exports.logoutUser = asyncHandler(async (req,res) => {
     await User.findByIdAndUpdate(
         req?.user?._id,
         {
@@ -200,4 +200,3 @@ module.exports.updateAccountDetails = asyncHandler( async (req, res) => {
             )
         );
 });
-

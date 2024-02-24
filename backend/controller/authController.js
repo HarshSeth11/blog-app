@@ -148,3 +148,56 @@ module.exports.refreshAccessToken = asyncHandler(async (req, res) => {
         new ApiResponse(200, "Both the tokens are generated Successfully", {refreshToken, accessToken})
     );
 });
+
+module.exports.changePassword = asyncHandler(async (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user?._id);
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+
+    if (!isPasswordCorrect)
+        throw new ApiError(400, "Old Password is incorrect");
+
+    user.password = newPassword;
+
+    await user.save({ validateBeforeSave: false });
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, "Password Changed Successfully", {}));
+});
+
+module.exports.getCurrentUser = asyncHandler( async (req, res) => {
+    return res
+        .status(200)
+        .json(new ApiResponse(200, "User Fetched Successfully", req.user));
+});
+
+module.exports.updateAccountDetails = asyncHandler( async (req, res) => {
+    const { userName, name, email } = req.body;
+
+    updatableObjects = {};
+
+    if(userName.time() !== "") {
+        updatableObjects["userName"] = userName;
+    }
+    if(name.time() !== "") {
+        updatableObjects["name"] = name;
+    }
+    if(email.time() !== "") {
+        updatableObjects["email"] = email;
+    }
+
+    const user = await User.findByIdAndUpdate(req.user._id, updatableObjects, {new: true});
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                "Information is updated Successfully",
+                user
+            )
+        );
+});
+

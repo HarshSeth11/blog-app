@@ -6,10 +6,9 @@ const logger = require('morgan');
 const cors = require('cors');
 require("dotenv").config()
 
-const indexRouter = require('./routes/index');
+
 const usersRouter = require('./routes/users');
 const blogs = require('./routes/blogs');
-const { requireAuth } = require('./middleware/auth.middleware.js');
 
 
 const app = express();
@@ -33,7 +32,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-app.use('/', indexRouter);
 app.use('/api/v1/blogs', blogs);
 app.use('/api/v1/users', usersRouter);
 

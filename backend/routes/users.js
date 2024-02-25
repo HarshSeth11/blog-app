@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const verifyJWT = require('../middleware/auth.middleware')
+const { verifyJWT } = require('../middleware/auth.middleware.js')
 const router = Router();
 
 // imported modules
@@ -7,7 +7,6 @@ const {registerUser, loginUser, logoutUser, refreshAccessToken, changePassword, 
 
 
 router.post('/register', registerUser);
-
 
 router.post('/login', loginUser);
 

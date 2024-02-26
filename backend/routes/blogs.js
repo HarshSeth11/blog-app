@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const postController = require('../controller/postController');
-const { requireAuth } = require('../middleware/auth.middleware');
+const { verifyJWT } = require('../middleware/auth.middleware');
 const {upload} = require("../middleware/multer.middleware");
 
-router.use(requireAuth());
+router.use(verifyJWT);
 
 router.post('/createPost', upload.single("thumbnail") ,postController.createBlog_Post);
 

@@ -1,25 +1,28 @@
 const jwt = require('jsonwebtoken');
+const { ApiError } = require('../utils/ApiError');
+const User = require('../models/user.modal.js');
 
-const verifyJWT = (req,res,next) => {
-    const token = req.cookies.auth_token;
+const verifyJWT = async (req,res,next) => {
+    const { accessToken } = req.cookies;
 
-    if(token) {
-        jwt.verify(token, 'heythisismysecretkey', (err, decodedtoken) => {
-            if(err) {
-                console.log(err);
-                res
-                .json({ auth : false });
-            }
-            else{
-                console.log(decodedtoken);
-                res.json({ auth : true });
-                next();
-            }
-        })
+    if(accessToken) {
+        const decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+
+        if(!decodedToken) {
+            throw new ApiError(404, "user not found!");
+        }
+
+        const user = await User.findById(decodedToken._id);
+
+        if(!user) {
+            throw new ApiError(404, "user not found!");
+        }
+
+        req.user = user;
+        next();
     }
     else {
-        console.log("Not Authorized");
-        res.json({ auth : false });
+        throw new ApiError(404, "No Access Token found!!");
     }
 }
 

@@ -33,6 +33,9 @@ const blogSchema = new Schema({
         required: true
     },
     comments: [commentBy],
+},
+{
+    timestamps: true
 });
 
 blogSchema.plugin(mongooseAggregatePaginate);

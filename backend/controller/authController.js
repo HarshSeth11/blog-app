@@ -20,6 +20,11 @@ const generateAccessAndRefreshToken = async(id) => {
     }
 }
 
+function validateEmail(email) {
+    const pattern = /^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/;
+    return pattern.test(email);
+}
+
 module.exports.registerUser = asyncHandler( async (req, res, next) => {
     // destructure the data from the req body
     // validate the data
@@ -31,6 +36,10 @@ module.exports.registerUser = asyncHandler( async (req, res, next) => {
 
     if( [name, userName, email, password].some((item) => (item === null || item === undefined || item.trim() === ""))) {
         throw new ApiError(400, "All Fields are required.");
+    }
+
+    if(!validateEmail(email)) {
+        throw new ApiError(400, "Invalid Email Address");
     }
 
     const userAlreadyExist = await User.findOne({
@@ -48,12 +57,30 @@ module.exports.registerUser = asyncHandler( async (req, res, next) => {
     );
 })
 
-module.exports.loginUser = asyncHandler( async (req,res) => {
+module.exports.loginUser = asyncHandler( async (req, res) => {
     const { username, email, password } = req.body;
 
 
     if (!username && !email) {
         throw new ApiError(400, "Username or email is required");
+    }
+
+    if(!validateEmail(email)) {
+        throw new ApiError(400, "Invalid Email Address");
+    }
+
+    if(req.cookies.accessToken) {
+        const decodedToken = jwt.verify(req.cookies.accessToken, process.env.ACCESS_TOKEN_SECRET);
+
+        if(!decodedToken) {
+            throw new ApiError(404, "Token not not found!");
+        }
+
+        const user = await User.findById(decodedToken._id);
+
+        if(user) {
+            throw new ApiError(400, "You're already logged in");
+        }
     }
 
     const user = await User.findOne({
@@ -119,35 +146,40 @@ module.exports.logoutUser = asyncHandler(async (req,res) => {
 });
 
 module.exports.refreshAccessToken = asyncHandler(async (req, res) => {
-    const { cookieRefreshToken } = req.cookies?.refreshToken;
+    const cookieRefreshToken = req.cookies?.refreshToken;
 
-    if(!cookieRefreshToken) {
+    if (!cookieRefreshToken) {
         throw new ApiError(401, "Refresh Token required");
     }
 
-    const decodedToken = jwt.verify(`${cookieRefreshToken}`, `${process.env.REFRESH_TOKEN_SECRET}`);
+    try {
+        const decodedToken = jwt.verify(cookieRefreshToken, process.env.REFRESH_TOKEN_SECRET);
 
-    const user = await User.findById(decodedToken._id);
+        const user = await User.findById(decodedToken._id);
 
-    if(!user) {
-        throw new ApiError(400, "User doesn't exists.");
+        if (!user) {
+            throw new ApiError(400, "User doesn't exist");
+        }
+
+        const { refreshToken, accessToken } = await generateAccessAndRefreshToken(user._id);
+
+        const options = {
+            httpOnly: true,
+            secure: true
+        }
+
+        res.cookie("refreshToken", refreshToken, options);
+        res.cookie("accessToken", accessToken, options);
+        res.status(200).json(new ApiResponse(200, "Both tokens are generated successfully", { refreshToken, accessToken }));
+    } catch (error) {
+        // Handle any errors here
+        if (error.name === 'TokenExpiredError') {
+            throw new ApiError(401, "Refresh Token expired");
+        }
+        throw new ApiError(401, "Invalid Refresh Token");
     }
-
-    const {refreshToken, accessToken} = await generateAccessAndRefreshToken(user._id);
-
-    const options = {
-        httpOnly: true,
-        secure: true
-    }
-
-    return res
-    .json(200)
-    .cookie("refreshToken", refreshToken, options)
-    .cookie("accessToken", accessToken, options)
-    .json(
-        new ApiResponse(200, "Both the tokens are generated Successfully", {refreshToken, accessToken})
-    );
 });
+
 
 module.exports.changePassword = asyncHandler(async (req, res) => {
     const { oldPassword, newPassword } = req.body;

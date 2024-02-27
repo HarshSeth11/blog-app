@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 const { isEmail } = require('validator');
 const bcrypt = require("bcrypt");
-const jsonwebtoken = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 
 const userSchema = new Schema({
     name: {
@@ -27,6 +27,9 @@ const userSchema = new Schema({
         minlength : [8, "Minimum password length is 8 characters"]
     },
     refreshToken: String
+},
+{
+    timestamps: true
 });
 
 
@@ -40,8 +43,8 @@ userSchema.methods.isPasswordCorrect = async function(password) {
     return await bcrypt.compare(password, this.password);
 }
 
-userSchema.methods.generateAccessToken = function() {
-    jsonwebtoken.sign({
+userSchema.methods.generateAccessToken = async function() {
+    return jwt.sign({
         _id: this._id,
         userName: this.userName,
         email: this.email,
@@ -54,14 +57,14 @@ userSchema.methods.generateAccessToken = function() {
     )
 }
 
-userSchema.methods.generateRefreshToken = function() {
-    jsonwebtoken.sign(
+userSchema.methods.generateRefreshToken = async function() {
+    return jwt.sign(
         {
             _id: this._id,
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
-            expiresIn: REFRESH_TOKEN_EXPIRY,
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
         }
     )
 }

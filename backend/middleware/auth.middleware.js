@@ -4,7 +4,7 @@ const User = require('../models/user.modal.js');
 const { asyncHandler } = require('../utils/asyncHandler.js');
 
 const verifyJWT = asyncHandler(async (req, _, next) => {
-    const { accessToken } = req.cookies;
+    const accessToken = req.cookies?.accessToken || req.headers?.authorization?.split(" ")[1];
 
     if (!accessToken) {
         throw new ApiError(401, "No Access Token found");

@@ -39,7 +39,7 @@ app.use('/api/v1/user', usersRouter);
 app.use(function(err, req, res, next) {
   return res
   .status(err.status || 500)
-  .json(err)
+  .json(err.status === 500 ? "Internal Sever Error" : err)
 });
 
 module.exports = app;

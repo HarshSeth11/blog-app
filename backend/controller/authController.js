@@ -25,6 +25,23 @@ function validateEmail(email) {
     return pattern.test(email);
 }
 
+function isPasswordStrong(password) {
+    const strongPasswordRegex = /^(?=.*[a-zA-Z])(?=.*\d).{8,}$/;
+
+    if(strongPasswordRegex.test(password)) return true;
+    else false;
+}
+
+function isUserNameInCorrectFormat(username) {
+    const usernameRegex = /^(?=.*[a-zA-Z])[a-zA-Z0-9_.]+$/;
+
+    if(usernameRegex.test(username)) {
+        return true;
+    }
+    
+    return false;
+}
+
 module.exports.registerUser = asyncHandler( async (req, res, next) => {
     // destructure the data from the req body
     // validate the data
@@ -34,12 +51,21 @@ module.exports.registerUser = asyncHandler( async (req, res, next) => {
 
     const {name, userName, email, password} = req.body;
 
+    
     if( [name, userName, email, password].some((item) => (item === null || item === undefined || item.trim() === ""))) {
         throw new ApiError(400, "All Fields are required.");
     }
 
+    if(userName && !isUserNameInCorrectFormat(userName)) {
+        throw new ApiError(400, "Username is not in correct form you can only use characters (a - z, A - Z, 1 - 9, _ and .");
+    }
+
     if(!validateEmail(email)) {
         throw new ApiError(400, "Invalid Email Address");
+    }
+
+    if(!isPasswordStrong(password)) {
+        throw new ApiError(400, "Password is not strong enough.");
     }
 
     const userAlreadyExist = await User.findOne({
@@ -183,12 +209,17 @@ module.exports.refreshAccessToken = asyncHandler(async (req, res) => {
 
 module.exports.changePassword = asyncHandler(async (req, res) => {
     const { oldPassword, newPassword } = req.body;
-
+    
+    if(!isPasswordStrong(newPassword)) {
+        throw new ApiError(400, "Password is not strong enough.");
+    }
+    
     const user = await User.findById(req.user?._id);
     const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
-
-    if (!isPasswordCorrect)
+    
+    if (!isPasswordCorrect){
         throw new ApiError(400, "Old Password is incorrect");
+    }
 
     user.password = newPassword;
 
@@ -210,18 +241,40 @@ module.exports.updateAccountDetails = asyncHandler( async (req, res) => {
 
     updatableObjects = {};
 
-    if(userName.time() !== "") {
+    if(userName && !isUserNameInCorrectFormat(userName)) {
+        throw new ApiError(400, "Username is not in correct form you can only use characters (a - z, A - Z, 1 - 9, _ and .");
+    }
+
+    const existingUser = await User.findOne({
+        $and: [
+            {_id: {$ne: req.user._id}},
+            {$or: [{userName, email}]}
+        ]
+    });
+
+    
+    if(existingUser) {
+        throw new ApiError(401, "UserName or Email Already Exists.");
+    }
+    
+    if(userName && userName.trim() !== "" && req.user?.userName != userName) {
         updatableObjects["userName"] = userName;
     }
-    if(name.time() !== "") {
+    if(name && name.trim() !== "" && req.user?.name != name) {
         updatableObjects["name"] = name;
     }
-    if(email.time() !== "") {
+    if(email && email.trim() !== "" && req.user?.email != email) {
         updatableObjects["email"] = email;
     }
+    
+    if(Object.keys(updatableObjects).length === 0) {
+        throw new ApiError(400, "There is nothing to update.");
+    }
 
-    const user = await User.findByIdAndUpdate(req.user._id, updatableObjects, {new: true});
-
+    console.log(Object.keys(updatableObjects).length === 0);
+    
+    const user = await User.findByIdAndUpdate(req.user._id, updatableObjects, {new: true}).select(" -password -refreshToken");
+    
     return res
         .status(200)
         .json(

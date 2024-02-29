@@ -7,6 +7,7 @@ const {
   deleteFromCloudinary,
 } = require("../utils/cloudinary");
 const Post = require("../models/post.modal");
+const fs = require('fs');
 
 module.exports.createBlog_Post = asyncHandler(async (req, res) => {
   // Destructure all the data from the req body
@@ -20,15 +21,17 @@ module.exports.createBlog_Post = asyncHandler(async (req, res) => {
 
   const { title, body, category } = req.body;
 
+  const thumbnailLocalPath = req.file?.path;
+
   if (
     [title, body, category].some(
       (item) => item === null || item === undefined || item.trim() === ""
     )
   ) {
+    if(thumbnailLocalPath) fs.unlinkSync(thumbnailLocalPath);
     throw new ApiError(400, "All Fields are required.");
   }
 
-  const thumbnailLocalPath = req.file?.path;
 
   if (!thumbnailLocalPath) {
     throw new ApiError(400, "Thumbnail is Required");
@@ -58,7 +61,9 @@ module.exports.createBlog_Post = asyncHandler(async (req, res) => {
 });
 
 module.exports.getAllPosts = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10, sortBy, sortType } = req.query;
+  const { page = 1, limit = 10, sortBy, sortType, query } = req.query;
+
+  console.log(query);
 
   const blogs = await Post.aggregate([
     {
@@ -78,7 +83,9 @@ module.exports.getAllPosts = asyncHandler(async (req, res) => {
     throw new ApiError(404, "No Post found");
   }
 
-  return res.json(200).json(new ApiResponse(200, "Posts fetched successfully"));
+  return res
+  .status(200)
+  .json(new ApiResponse(200, "Posts fetched successfully", blogs));
 });
 
 module.exports.updatePostDetails = asyncHandler(async (req, res) => {

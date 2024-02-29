@@ -6,7 +6,7 @@ const {upload} = require("../middleware/multer.middleware");
 
 router.use(verifyJWT);
 
-router.post('/createPost', upload.single("thumbnail") ,postController.createBlog_Post);
+router.post('/create-post', upload.single("thumbnail") ,postController.createBlog_Post);
 
 router.get('/all-posts', postController.getAllPosts);
 

@@ -43,6 +43,9 @@ module.exports.createBlog_Post = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Thumbnail is Required");
   }
 
+  title = title.toLowerCase();
+  category = category.toLowerCase();
+
   const post = await Post.create({
     title,
     body,
@@ -61,11 +64,16 @@ module.exports.createBlog_Post = asyncHandler(async (req, res) => {
 });
 
 module.exports.getAllPosts = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10, sortBy, sortType, query } = req.query;
+  const { page = 1, limit = 10, sortBy, sortType, ...query } = req.query;
 
-  console.log(query);
+  for(let key in query) {
+    query[key] = query[key].toLowerCase();
+  }
 
   const blogs = await Post.aggregate([
+    {
+      $match: query
+    },
     {
       $sort: {
         [sortBy]: sortType === "desc" ? -1 : 1,
@@ -92,21 +100,29 @@ module.exports.updatePostDetails = asyncHandler(async (req, res) => {
   const { title, body, category } = req.body;
   const { postId } = req.params;
 
+  if(!isValidObjectId(postId)) {
+    throw new ApiError(404, "No post found!");
+  }
+
   const updateobj = {};
 
-  if (title.trim() !== "") {
-    updateobj["title"] = title;
+  if (title && title.trim() !== "") {
+    updateobj["title"] = title.toLowerCase();
   }
-  if (body.trim() !== "") {
+  if (body && body.trim() !== "") {
     updateobj["body"] = body;
   }
-  if (category.trim() !== "") {
-    updateobj["category"] = category;
+  if (category && category.trim() !== "") {
+    updateobj["category"] = category.toLowerCase();
+  }
+
+  if(Object.keys(updateobj).length === 0) {
+    throw new ApiError(400, "There is nothing to update.");
   }
 
   const blog = await Post.findByIdAndUpdate(
     postId,
-    { updateobj },
+    updateobj,
     { new: true }
   );
 
@@ -124,6 +140,10 @@ module.exports.changeThumbnail = asyncHandler(async (req, res) => {
   const { postId } = req.params;
   const thumbnailLocalPath = req.file?.path;
 
+  if(!isValidObjectId(postId)) {
+    throw new ApiError(404, "No post found!");
+  }
+
   if (!thumbnailLocalPath) {
     throw new ApiError(400, "Thumbnail is Required");
   }
@@ -133,14 +153,20 @@ module.exports.changeThumbnail = asyncHandler(async (req, res) => {
   if (!thumbnail) {
     throw new ApiError(400, "Thumbnail is Required");
   }
+  
+  const post = await Post.findById(postId);
 
-  const { thumbnailToBeDeleted } = await Post.findById(postId);
-
-  await deleteFromCloudinary(thumbnailToBeDeleted);
-
+  if(!post) {
+    throw new ApiError(404, "Post not Found!!");
+  }
+  
+  if (post.thumbnail) {
+    await deleteFromCloudinary(post.thumbnail);
+  }
+  
   const blog = await Post.findByIdAndUpdate(
     postId,
-    { thumbnail },
+    { thumbnail: thumbnail.url },
     { new: true }
   );
 
@@ -153,6 +179,10 @@ module.exports.changeThumbnail = asyncHandler(async (req, res) => {
 
 module.exports.deletePost = asyncHandler(async (req, res) => {
   const { postId } = req.params;
+
+  if(!isValidObjectId(postId)) {
+    throw new ApiError(404, "No post found!");
+  }
 
   const deletedPost = await Post.findByIdAndDelete(postId);
 

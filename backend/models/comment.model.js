@@ -1,6 +1,10 @@
 const { Schema, default: mongoose } = require("mongoose")
 
 const commentSchema = new Schema({
+    content: {
+        type: String,
+        required: true
+    },
     post: {
         type: Schema.Types.ObjectId,
         ref: "Post"

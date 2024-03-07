@@ -1,12 +1,13 @@
 const { asyncHandler } = require("../utils/asyncHandler");
 const { ApiError } = require("../utils/ApiError");
 const { ApiResponse } = require("../utils/ApiResponse");
-const {isValidObjectId} = require('mongoose');
+const {isValidObjectId, default: mongoose} = require('mongoose');
 const {
   uploadOnCloudinary,
   deleteFromCloudinary,
 } = require("../utils/cloudinary");
 const Post = require("../models/post.modal");
+const Like = require("../models/like.model");
 const fs = require('fs');
 
 module.exports.createBlog_Post = asyncHandler(async (req, res) => {
@@ -19,7 +20,7 @@ module.exports.createBlog_Post = asyncHandler(async (req, res) => {
   // check if post is created if not send server error
   // return response to the user
 
-  const { title, body, category } = req.body;
+  let { title, body, category } = req.body;
 
   const thumbnailLocalPath = req.file?.path;
 
@@ -46,12 +47,18 @@ module.exports.createBlog_Post = asyncHandler(async (req, res) => {
   title = title.toLowerCase();
   category = category.toLowerCase();
 
-  const post = await Post.create({
-    title,
-    body,
-    thumbnail: thumbnail.url,
-    category,
-  });
+  let post;
+  try {
+    post = await Post.create({
+      title,
+      body,
+      thumbnail: thumbnail.url,
+      category,
+    });
+  } catch (error) {
+    await deleteFromCloudinary(thumbnail.url)
+    throw new ApiError(500, "Failed to create post.");
+  }
 
   const createdPost = await Post.findById(post._id);
 
@@ -204,7 +211,14 @@ module.exports.getPostById = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Post doesn't exists");
   }
   
-  const post = await Post.findById(postId);
+  let post;
+  try {
+    post = await Post.findById(postId);
+  } catch (error) {
+    throw new ApiError(500, "Internal Server Error");
+  }
+
+  
   
   if(!post) {
     throw new ApiError(400, "Post doesn't exists");

@@ -1,11 +1,18 @@
 const { Router } = require("express");
+const { verifyJWT } = require('../middleware/auth.middleware');
+const { addComment, editComment, deleteComment, getPostComments } = require("../controller/commentController");
+
 
 const router = Router();
 
-router.post('/create/:postId', )
+router.use(verifyJWT)
 
-router.patch("/update/:postId/:commentId", );
+router.get('/:postId', getPostComments);
 
-router.delete('/delete-comment/:commentId', );
+router.post('/create/:postId', addComment);
+
+router.patch("/edit/:postId/:commentId", editComment);
+
+router.delete('/delete-comment/:commentId', deleteComment);
 
 module.exports = router;

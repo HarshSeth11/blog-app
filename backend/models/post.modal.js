@@ -1,14 +1,6 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
-const mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2')
-
-const commentBy = new Schema({
-    user: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-    },
-    text: String
-});
+const mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
   
 
 const blogSchema = new Schema({
@@ -32,7 +24,10 @@ const blogSchema = new Schema({
         type: String,
         required: true
     },
-    comments: [commentBy],
+    likes: {
+        type: Number,
+        default: 0
+    }
 },
 {
     timestamps: true

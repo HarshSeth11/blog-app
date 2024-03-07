@@ -1,11 +1,40 @@
-const { isValidObjectId } = require("mongoose");
+const { isValidObjectId, default: mongoose } = require("mongoose");
 const { asyncHandler } = require("../utils/asyncHandler");
 const { ApiError } = require("../utils/ApiError");
 const Comment = require("../models/comment.model");
 const { ApiResponse } = require("../utils/ApiResponse");
 
+module.exports.getPostComments = asyncHandler(async (req, res) => {
+    const { postId } = req.params;
+    const { page = 1, limit = 10 } = req.query;
 
-module.exports.createComment = asyncHandler(async (req, res) => {
+    let comments
+    try {
+        comments = await Comment.aggregate([
+            {
+                $match: {
+                    post: mongoose.Schema.Types.ObjectId(postId)
+                }
+            },
+            {
+                $skip: (page-1) * limit
+            },
+            {
+                $limit: limit
+            }
+        ]);
+    } catch (error) {
+        throw new ApiError(500, "Internal Server Error");
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, comments.length > 0? "Comments fetched successfully" : "There are not comments on this post right now", comments.length > 0? comments : {})
+    );
+})
+
+module.exports.addComment = asyncHandler(async (req, res) => {
     const { postId } = req.params;
     const { content } = req.body;
 

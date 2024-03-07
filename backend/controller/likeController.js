@@ -1,25 +1,35 @@
-const { isValidObjectId } = require("mongoose");
+const { isValidObjectId, mongo, default: mongoose } = require("mongoose");
 const Like = require("../models/like.model");
 const { ApiResponse } = require("../utils/ApiResponse");
 const { asyncHandler } = require("../utils/asyncHandler");
 const { ApiError } = require("../utils/ApiError");
+const Post = require("../models/post.modal");
 
 module.exports.toggleLike = asyncHandler(async (req, res) => {
     const { postId } = req.params;
-    const user = req.user;
 
-    const isLiked = await Like.findOne({
-        $and: [
-            post= postId,
-            owner= user._id
-        ]
-    });
-
-    if(isLiked) {
-        await Like.findByIdAndDelete(isLiked._id);
-    }
-    else {
-        await Like.create({post: postId, owner: user._id});
+    try {
+        const like = await Like.findOneAndDelete({likeBy: req.user._id, post: postId});
+    
+        if(!like) {
+            await Like.create({
+                post: postId,
+                likeBy: req.user._id
+            });
+    
+            await Post.findByIdAndUpdate(
+                postId,
+                { $inc: { likes: 1 } }
+            );
+        }
+        else if(like) {
+            await Post.findByIdAndUpdate(
+                postId,
+                { $inc: { likes: -1 } }
+            );
+        }
+    } catch (error) {
+        throw new ApiError(500, "Internal Server Error", error)
     }
 
     return res

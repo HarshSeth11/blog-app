@@ -5,7 +5,7 @@ const likeSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Post"
     },
-    owner: {
+    likeBy: {
         type: Schema.Types.ObjectId,
         ref: "User"
     }

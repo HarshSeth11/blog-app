@@ -9,6 +9,8 @@ require("dotenv").config()
 
 const usersRouter = require('./routes/users');
 const blogs = require('./routes/blogs');
+const like = require('./routes/like');
+const comment = require('./routes/comment');
 
 
 const app = express();
@@ -34,6 +36,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/v1/blog', blogs);
 app.use('/api/v1/user', usersRouter);
+app.use('/api/v1/like', like);
+app.use('/api/v1/comment', comment);
 
 // error handler
 app.use(function(err, req, res, next) {

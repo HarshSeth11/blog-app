@@ -46,7 +46,7 @@ module.exports.allLikedPosts = asyncHandler(async (req, res) => {
     const LikedPostsList = await Like.aggregate([
         {
             $match: {
-                owner: req.user._id
+                likeBy: req.user._id
             }
         },
         {
@@ -59,7 +59,7 @@ module.exports.allLikedPosts = asyncHandler(async (req, res) => {
         },
         {
             $project: {
-                owner: 0
+                likeBy: 0
             }
         }
     ]);

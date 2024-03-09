@@ -51,7 +51,7 @@ module.exports.allLikedPosts = asyncHandler(async (req, res) => {
         },
         {
             $lookup: {
-                from: "Post",
+                from: "posts",
                 localField: "post",
                 foreignField: "_id",
                 as: "posts"

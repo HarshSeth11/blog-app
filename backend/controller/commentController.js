@@ -1,4 +1,5 @@
-const { isValidObjectId, default: mongoose } = require("mongoose");
+const { isValidObjectId } = require("mongoose");
+const mongoose = require("mongoose");
 const { asyncHandler } = require("../utils/asyncHandler");
 const { ApiError } = require("../utils/ApiError");
 const Comment = require("../models/comment.model");
@@ -8,38 +9,50 @@ module.exports.getPostComments = asyncHandler(async (req, res) => {
     const { postId } = req.params;
     const { page = 1, limit = 10 } = req.query;
 
-    let comments
-    try {
-        comments = await Comment.aggregate([
-            {
-                $match: {
-                    post: mongoose.Schema.Types.ObjectId(postId)
-                }
-            },
-            {
-                $skip: (page-1) * limit
-            },
-            {
-                $limit: limit
-            }
-        ]);
-    } catch (error) {
-        throw new ApiError(500, "Internal Server Error");
+    if(!isValidObjectId(postId)) {
+        throw new ApiError(404, "Post not found");
     }
 
-    return res
-    .status(200)
-    .json(
-        new ApiResponse(200, comments.length > 0? "Comments fetched successfully" : "There are not comments on this post right now", comments.length > 0? comments : {})
+    let comments;
+    try {
+        // const pipeline = [
+        //     {
+        //         $match: {
+        //             post: `ObjectId(${postId})`
+        //         }
+        //     },
+        //     {
+        //         $skip: (parseInt(page) - 1) * parseInt(limit)
+        //     },
+        //     {
+        //         $limit: parseInt(limit)
+        //     }
+        // ];
+
+        const pipeline = [
+            {
+                $match: {
+                    post: mongoose.Types.ObjectId(postId)
+                }
+            }
+        ];          
+
+        comments = await Comment.aggregate(pipeline);
+    } catch (error) {
+        throw new ApiError(500, "Internal Server Error", error);
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, comments.length > 0 ? "Comments fetched successfully" : "There are no comments on this post right now", comments)
     );
-})
+});
 
 module.exports.addComment = asyncHandler(async (req, res) => {
     const { postId } = req.params;
     const { content } = req.body;
 
-    if (!isValidObjectId(postId) || !isValidObjectId(req.body._id)) {
-        throw new ApiError(401, "You are not authorized to comment on this video");
+    if(!isValidObjectId(postId)) {
+        throw new ApiError(404, "Post doesn't not exists.");
     }
 
     if (content.trim() === "") {

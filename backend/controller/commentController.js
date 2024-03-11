@@ -9,33 +9,28 @@ module.exports.getPostComments = asyncHandler(async (req, res) => {
     const { postId } = req.params;
     const { page = 1, limit = 10 } = req.query;
 
-    if(!isValidObjectId(postId)) {
+    if (!isValidObjectId(postId)) {
         throw new ApiError(404, "Post not found");
     }
 
     let comments;
     try {
-        // const pipeline = [
-        //     {
-        //         $match: {
-        //             post: `ObjectId(${postId})`
-        //         }
-        //     },
-        //     {
-        //         $skip: (parseInt(page) - 1) * parseInt(limit)
-        //     },
-        //     {
-        //         $limit: parseInt(limit)
-        //     }
-        // ];
-
         const pipeline = [
             {
                 $match: {
-                    post: mongoose.Types.ObjectId(postId)
+                    post: mongoose.Types.ObjectId(postId) // Ensure postId is converted to ObjectId
                 }
+            },
+            {
+                $sort: { createdAt: -1 } // Optional: Sort by createdAt descending
+            },
+            {
+                $skip: (parseInt(page) - 1) * parseInt(limit)
+            },
+            {
+                $limit: parseInt(limit)
             }
-        ];          
+        ];
 
         comments = await Comment.aggregate(pipeline);
     } catch (error) {
@@ -76,11 +71,12 @@ module.exports.editComment = asyncHandler(async (req, res) => {
     const {postId, commentId} = req.params;
     const { content } = req.body;
 
-    if(!isValidObjectId(postId) || !isValidObjectId(commentId)) {
-        throw new ApiError(400, "either post id or comment id is incorrect!");
+
+    if(!isValidObjectId(commentId)) {
+        throw new ApiError(400, "comment id is incorrect!");
     }
 
-    if(content.trim() == "") {
+    if(!content || content.trim() == "") {
         throw new ApiError(400, "Content is required.");
     }
 

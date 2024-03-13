@@ -1,24 +1,26 @@
 const { isValidObjectId } = require("mongoose");
 const mongoose = require("mongoose");
+const mongodb = require('mongodb')
 const { asyncHandler } = require("../utils/asyncHandler");
 const { ApiError } = require("../utils/ApiError");
 const Comment = require("../models/comment.model");
 const { ApiResponse } = require("../utils/ApiResponse");
 
 module.exports.getPostComments = asyncHandler(async (req, res) => {
-    const { postId } = req.params;
+    let { postId } = req.params;
     const { page = 1, limit = 10 } = req.query;
 
     if (!isValidObjectId(postId)) {
         throw new ApiError(404, "Post not found");
     }
 
+
     let comments;
     try {
-        const pipeline = [
+        comments = await Comment.aggregate([
             {
                 $match: {
-                    post: mongoose.Types.ObjectId(postId) // Ensure postId is converted to ObjectId
+                    post: new mongoose.Types.ObjectId(postId) // Ensure postId is converted to ObjectId
                 }
             },
             {
@@ -29,10 +31,25 @@ module.exports.getPostComments = asyncHandler(async (req, res) => {
             },
             {
                 $limit: parseInt(limit)
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "owner",
+                    foreignField: "_id",
+                    as: "commentedBy",
+                    pipeline: [
+                        {
+                            $project: {
+                                name: 1,
+                                userName: 1,
+                                email: 1
+                            }
+                        }
+                    ]
+                }
             }
-        ];
-
-        comments = await Comment.aggregate(pipeline);
+        ]);
     } catch (error) {
         throw new ApiError(500, "Internal Server Error", error);
     }
@@ -56,7 +73,7 @@ module.exports.addComment = asyncHandler(async (req, res) => {
 
     const comment = await Comment.create({
         content,
-        owner: req.body._id,
+        owner: req.user._id,
         post: postId
     });
 

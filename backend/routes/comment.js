@@ -7,9 +7,9 @@ const router = Router();
 
 router.use(verifyJWT)
 
-router.get('/:postId', getPostComments);
-
 router.post('/add/:postId', addComment);
+
+router.get('/:postId', getPostComments);
 
 router.patch("/edit/:postId/:commentId", editComment);
 

@@ -9,6 +9,7 @@ const {
 const Post = require("../models/post.modal");
 const Like = require("../models/like.model");
 const fs = require('fs');
+const Like = require("../models/like.model");
 
 module.exports.createBlog_Post = asyncHandler(async (req, res) => {
   // Destructure all the data from the req body
@@ -212,8 +213,11 @@ module.exports.getPostById = asyncHandler(async (req, res) => {
   }
   
   let post;
+  let isliked = false;
   try {
     post = await Post.findById(postId);
+    const liked = await Like.findOne({post: postId, likeBy: req.user._id});
+    if(liked) isliked = true
   } catch (error) {
     throw new ApiError(500, "Internal Server Error");
   }
@@ -227,7 +231,6 @@ module.exports.getPostById = asyncHandler(async (req, res) => {
   return res
   .status(200)
   .json(
-    new ApiResponse(200, "Post fetched Successfully", post)
+    new ApiResponse(200, "Post fetched Successfully", {post, isliked})
   );
 });
-
